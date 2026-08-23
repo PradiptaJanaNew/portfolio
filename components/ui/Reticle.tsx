@@ -15,6 +15,12 @@ import { gsap } from "gsap";
  * hides the OS cursor via the `cursor-reticle` class on <html> (text
  * fields keep their caret — see globals.css).
  */
+/**
+ * NOTE ON Z-INDEX: this must outrank every overlay on the site. `.cursor-reticle`
+ * hides the OS cursor document-wide, so anything painted ABOVE the reticle
+ * leaves the visitor with no pointer at all — which is what happened over the
+ * CV overlay (z-120) while the reticle sat at z-90.
+ */
 export function Reticle() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -94,13 +100,13 @@ export function Reticle() {
       <div
         ref={ringRef}
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[90] -ml-[14px] -mt-[14px] h-7 w-7 rounded-full border opacity-0 will-change-transform"
+        className="pointer-events-none fixed left-0 top-0 z-[200] -ml-[14px] -mt-[14px] h-7 w-7 rounded-full border opacity-0 will-change-transform"
         style={{ borderColor: "var(--cyan)", mixBlendMode: "difference" }}
       />
       <div
         ref={dotRef}
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[91] -ml-[2px] -mt-[2px] h-1 w-1 rounded-full opacity-0 will-change-transform"
+        className="pointer-events-none fixed left-0 top-0 z-[201] -ml-[2px] -mt-[2px] h-1 w-1 rounded-full opacity-0 will-change-transform"
         style={{ background: "var(--cyan)" }}
       />
     </>

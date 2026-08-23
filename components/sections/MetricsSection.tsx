@@ -286,14 +286,14 @@ export function MetricsSection() {
       id="metrics"
       ref={sectionRef}
       aria-labelledby="metrics-title"
-      className="relative w-full min-h-[260vh]"
+      className="pin-band relative w-full min-h-[260vh]"
       style={{ color: BONE }}
     >
       {/* Sticky stage — CSS-pinned while the tall section scrolls past it.
           NO GSAP pin. overflow-hidden contained here. */}
       <div
         ref={stageRef}
-        className="sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]"
+        className="pin-stage sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]"
         style={{ transform: "translateZ(0)" }}
       >
         {/* local atmosphere */}

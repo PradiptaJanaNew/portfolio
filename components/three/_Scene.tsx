@@ -66,7 +66,7 @@ function DemandDriver({ skip, paused }: { skip: number; paused: boolean }) {
 export function Scene() {
   const [eventSource, setEventSource] = useState<HTMLElement | null>(null);
   const [paused, setPaused] = useState(false);
-  const { tier, gpuTier, isWindows, isLowEnd } = useDeviceCapabilities();
+  const { tier, gpuTier, isWindows, isLowEnd, webglBudget } = useDeviceCapabilities();
   const hiddenRef = useRef(false);
 
   const pausedRef = useRef(false);
@@ -105,11 +105,12 @@ export function Scene() {
   }, []);
 
   const isLow = tier === "low" || isLowEnd;
-  // Render one page frame in two (→ 30fps on a healthy 60fps page), or one
-  // in three on weak hardware. Everything in the scene is damped, so a lower
-  // sample rate reads as slightly softer motion rather than as stutter — and
-  // it hands the DOM back half of what this canvas was taking.
-  const ambientSkip = isLow ? 3 : 2;
+  // Render one page frame in two (→ 30fps on a healthy 60fps page), one in
+  // three on a phone, one in four on weak hardware. Everything in the scene is
+  // damped, so a lower sample rate reads as slightly softer motion rather than
+  // as stutter — and it hands the DOM back most of what this canvas was
+  // taking, which matters far more on a phone than the extra samples do.
+  const ambientSkip = isLow ? 4 : webglBudget === "reduced" ? 3 : 2;
 
   // Cross-browser audit (Phase 3): "high-performance" silently
   // downgrades Firefox + Windows + several iOS Safari builds to

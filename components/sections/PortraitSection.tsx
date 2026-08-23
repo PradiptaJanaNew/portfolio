@@ -60,28 +60,54 @@ export function PortraitSection() {
   const [active, setActive] = useState(false);
   const [cvMode, setCvMode] = useState<CvMode | null>(null);
 
-  const { isMobile, tier, gpuTier } = useDeviceCapabilities();
+  const { canRunWebGL, webglBudget } = useDeviceCapabilities();
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
     setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }, []);
 
-  const canUseGl = !isMobile && tier !== "low" && gpuTier !== "low" && !reduced;
+  // The portrait resolve is the signature beat of this section, so a capable
+  // phone keeps it — it is a single textured quad. Only genuinely weak devices
+  // fall back to the plain <img>.
+  const canUseGl = canRunWebGL && !reduced;
 
   const closeCv = useCallback(() => setCvMode(null), []);
 
   // Only render frames while the plate is actually on screen.
+  //
+  // On a phone we additionally hand the ambient scene's GPU slot over while
+  // the plate is up (the `portfolio:bg-pause` contract SYS.RENDER already
+  // uses). A phone should be asked for ONE canvas at a time; two full-viewport
+  // WebGL surfaces plus seven parallax layers is what makes a mobile browser
+  // stutter. Desktop keeps both running.
+  const yieldsAmbient = webglBudget === "reduced";
   useEffect(() => {
     const el = plateRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
-      ([e]) => setActive(e.isIntersecting),
+      ([e]) => {
+        setActive(e.isIntersecting);
+        if (yieldsAmbient) {
+          (window as unknown as { __bgPause?: boolean }).__bgPause = e.isIntersecting;
+          window.dispatchEvent(
+            new CustomEvent("portfolio:bg-pause", { detail: e.isIntersecting })
+          );
+        }
+      },
       { rootMargin: "120px" }
     );
     io.observe(el);
-    return () => io.disconnect();
-  }, []);
+    return () => {
+      io.disconnect();
+      if (yieldsAmbient) {
+        (window as unknown as { __bgPause?: boolean }).__bgPause = false;
+        window.dispatchEvent(
+          new CustomEvent("portfolio:bg-pause", { detail: false })
+        );
+      }
+    };
+  }, [yieldsAmbient]);
 
   // Scroll → shader scan progress (+ the numeric readout beside the plate).
   useEffect(() => {
@@ -196,9 +222,9 @@ export function PortraitSection() {
         id="operator"
         ref={sectionRef}
         aria-labelledby="operator-title"
-        className="operator-band relative w-full min-h-[220vh]"
+        className="operator-band pin-band relative w-full min-h-[220vh]"
       >
-      <div className="sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]">
+      <div className="pin-stage sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]">
         {/* local atmosphere */}
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
           <div

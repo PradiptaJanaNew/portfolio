@@ -67,7 +67,7 @@ function prefersReduced() {
  */
 export function CvOverlay({ mode, onClose }: { mode: CvMode | null; onClose: () => void }) {
   const [mounted, setMounted] = useState(false);
-  const { tier, gpuTier, isMobile } = useDeviceCapabilities();
+  const { webglBudget } = useDeviceCapabilities();
 
   const rootRef = useRef<HTMLDivElement>(null);
   const pctRef = useRef<HTMLSpanElement>(null);
@@ -84,7 +84,7 @@ export function CvOverlay({ mode, onClose }: { mode: CvMode | null; onClose: () 
 
   useEffect(() => setMounted(true), []);
 
-  const heavyOk = !isMobile && tier !== "low" && gpuTier !== "low" && !prefersReduced();
+  const heavyOk = webglBudget === "full" && !prefersReduced();
 
   // ── Body scroll lock + focus management + Escape ─────────────────────
   useEffect(() => {

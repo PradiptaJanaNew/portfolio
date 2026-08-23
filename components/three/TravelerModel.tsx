@@ -211,10 +211,18 @@ export function TravelerModel() {
     // the offset can be written abruptly without a snap.
     const off = sceneStore.travelerOffset;
 
+    // Horizontal poses are authored against a wide desktop frustum. A portrait
+    // phone sees roughly a third of that width, so the same world X puts the
+    // robot completely off screen — which is why it was simply absent on
+    // mobile. Squeeze X toward the centre in proportion to how much narrower
+    // the view actually is.
+    const aspect = state.size.width / Math.max(state.size.height, 1);
+    const xScale = THREE.MathUtils.clamp(aspect / 1.6, 0.3, 1);
+
     spin.current += dt * SPIN_SPEED;
     const bob = Math.sin(state.clock.elapsedTime * BOB_SPEED) * BOB_AMP;
 
-    g.position.x = damp(g.position.x, target.pos.x + off.x, POS_RATE, dt);
+    g.position.x = damp(g.position.x, (target.pos.x + off.x) * xScale, POS_RATE, dt);
     g.position.y = damp(g.position.y, target.pos.y + off.y + bob, POS_RATE, dt);
     g.position.z = damp(g.position.z, target.pos.z + off.z, POS_RATE, dt);
 

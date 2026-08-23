@@ -98,7 +98,7 @@ class WebGLErrorBoundary extends Component<
 }
 
 export function SceneContainer() {
-  const { isMobile, tier, gpuTier } = useDeviceCapabilities();
+  const { canRunWebGL } = useDeviceCapabilities();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -109,7 +109,12 @@ export function SceneContainer() {
   // or attempting the Canvas before `window` is available.
   if (!mounted) return null;
 
-  if (isMobile || tier === "low" || gpuTier === "low") {
+  // Gate on CAPABILITY, not screen size. This used to bail on `isMobile`,
+  // which is true for any touch device or any viewport under 1024px — so a
+  // current phone that runs shaders comfortably got the flat SVG stand-in and
+  // the site lost every piece of 3D on mobile. `canRunWebGL` is false only for
+  // devices that genuinely cannot afford it, or visitors who asked us not to.
+  if (!canRunWebGL) {
     return <SvgCoreFallback />;
   }
 

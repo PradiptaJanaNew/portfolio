@@ -144,14 +144,16 @@ export function TerminalSection() {
   const settleRef = useRef<(() => void) | null>(null);
   const tookOverRef = useRef(false);
 
-  const { isMobile, tier, gpuTier } = useDeviceCapabilities();
+  const { webglBudget } = useDeviceCapabilities();
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
     setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }, []);
-  const canUseGl =
-    !isMobile && tier !== "low" && gpuTier !== "low" && !reduced;
+  // The floor-and-rain backdrop is pure decoration behind an opaque console,
+  // so it is the first thing to drop when the budget tightens. On phones the
+  // GPU is better spent on the portrait resolve and the showcase model.
+  const canUseGl = webglBudget === "full" && !reduced;
 
   /**
    * Hand the console over to the visitor. Called on the first focus,
@@ -190,6 +192,9 @@ export function TerminalSection() {
     ({ root, reduced: reducedMotion, onCleanup }) => {
       const win = root.querySelector<HTMLElement>("[data-window]");
       const rows = Array.from(root.querySelectorAll<HTMLElement>("[data-boot-row]"));
+      // Measured BEFORE the rows are collapsed. Every boot row is a single
+      // line, so one measurement covers all of them.
+      const rowH = rows[0]?.getBoundingClientRect().height ?? 0;
       const cells = Array.from(root.querySelectorAll<HTMLElement>("[data-type]"));
       const carets = Array.from(root.querySelectorAll<HTMLElement>("[data-caret]"));
       const chips = Array.from(root.querySelectorAll<HTMLElement>("[data-chip]"));
@@ -199,7 +204,7 @@ export function TerminalSection() {
       /** The console, fully booted. Also the reduced-motion end state. */
       const settle = () => {
         for (const cell of cells) cell.style.width = `${cell.dataset.type ?? 0}ch`;
-        gsap.set(rows, { opacity: 1 });
+        gsap.set(rows, { opacity: 1, clearProps: "height,overflow" });
         gsap.set(carets, { opacity: 0 });
         gsap.set(chips, { opacity: 1, y: 0 });
         gsap.set(chrome, { opacity: 1, y: 0 });
@@ -240,7 +245,12 @@ export function TerminalSection() {
         return;
       }
 
-      gsap.set(rows, { opacity: 0 });
+      // Height 0, not just opacity 0. A hidden-but-laid-out row still
+      // occupies its line, so all twelve reserved space from the start and
+      // the prompt sat marooned at the bottom of the console with a dead gap
+      // above it. Collapsing them makes the prompt ride directly under the
+      // last line that has actually been typed, the way a real shell does.
+      gsap.set(rows, { opacity: 0, height: 0, overflow: "hidden" });
       gsap.set(carets, { opacity: 0 });
       gsap.set(chips, { opacity: 0, y: 14 });
       gsap.set(chrome, { opacity: 0, y: 10 });
@@ -296,7 +306,7 @@ export function TerminalSection() {
         // Long lines take longer to type, but not linearly — a flat rate
         // would make the 40-char rows drag the whole sequence.
         const dur = 0.14 + n * 0.015;
-        tl.to(row, { opacity: 1, duration: 0.01 }, at)
+        tl.to(row, { opacity: 1, height: rowH, duration: 0.12, ease: "none" }, at)
           .to(caret, { opacity: 1, duration: 0.01 }, at)
           .fromTo(
             cell,

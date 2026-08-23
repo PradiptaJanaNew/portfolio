@@ -228,7 +228,13 @@ export function SkillsSection() {
                   <span
                     data-glow
                     aria-hidden
-                    className="pointer-events-none absolute left-[18%] top-1/2 h-[140%] w-[40%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 blur-[70px] transition-opacity duration-500 group-hover/row:opacity-60"
+                    /* Fixed height, NOT a percentage. At `h-[140%]` this scaled with the
+                       row, and an EXPANDED row is tall — so on the last module the
+                       glow ran past the section's `overflow-hidden` edge and got
+                       sliced off with a hard horizontal line across the top of the
+                       next section. A fixed size keeps it inside the section's
+                       bottom padding no matter which row is open. */
+                    className="pointer-events-none absolute left-[18%] top-1/2 h-[180px] w-[40%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 blur-[70px] transition-opacity duration-500 group-hover/row:opacity-60"
                     style={{ background: m.accent }}
                   />
 

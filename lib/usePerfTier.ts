@@ -259,24 +259,56 @@ export function readPerfTier(): PerfTier {
 
 export type DeviceCapabilities = {
   tier: PerfTier;
+  /**
+   * Small screen OR weak device. Use for LAYOUT decisions only.
+   *
+   * This used to gate WebGL too, which was the wrong call: it is true for any
+   * touch device and any viewport under 1024px, so a current phone with eight
+   * cores and 8GB of memory — perfectly able to run a shader — was served a
+   * completely static page. Gate canvases on `canRunWebGL` instead.
+   */
   isMobile: boolean;
+  /** Narrow viewport. Pure form factor, says nothing about capability. */
+  isSmallScreen: boolean;
   isTouch: boolean;
   gpuTier: GPUTier;
   prefersReducedMotion: boolean;
   isWindows: boolean;
   saveData: boolean;
   isLowEnd: boolean;
+  /**
+   * Genuinely cannot afford GPU work: reduced motion, Data Saver, a software
+   * renderer, or very little CPU/RAM. Screen size is deliberately NOT part of
+   * this.
+   */
+  isWeakDevice: boolean;
+  /**
+   * The single gate every canvas should use. A small screen is allowed 3D —
+   * on a tighter budget (see `webglBudget`), not none at all.
+   */
+  canRunWebGL: boolean;
+  /**
+   * How much GPU work this device should be asked for.
+   *   "full"    desktop: several canvases, higher dpr
+   *   "reduced" capable phone/tablet: ONE canvas at a time, dpr 1
+   *   "none"    weak device: static fallbacks only
+   */
+  webglBudget: "full" | "reduced" | "none";
 };
 
 const DEFAULT_CAPS: DeviceCapabilities = {
   tier: "high",
   isMobile: false,
+  isSmallScreen: false,
   isTouch: false,
   gpuTier: "high",
   prefersReducedMotion: false,
   isWindows: false,
   saveData: false,
   isLowEnd: false,
+  isWeakDevice: false,
+  canRunWebGL: true,
+  webglBudget: "full",
 };
 
 function evaluateCapabilities(): DeviceCapabilities {
@@ -319,15 +351,38 @@ function evaluateCapabilities(): DeviceCapabilities {
   const isWindows = isWindowsUA();
   const isLowEnd = tier === "low" || gpuTier === "low";
 
+  const isSmallScreen = narrow;
+
+  // Capability only. A phone is not weak because it is a phone — it is weak
+  // because of what it can actually do, or because the visitor asked us to
+  // hold back (reduced motion / Data Saver).
+  const isWeakDevice =
+    prefersReducedMotion ||
+    saveData ||
+    gpuTier === "low" ||
+    (cores > 0 && cores < 4) ||
+    (typeof mem === "number" && mem > 0 && mem < 4);
+
+  const canRunWebGL = !isWeakDevice;
+  const webglBudget: "full" | "reduced" | "none" = !canRunWebGL
+    ? "none"
+    : isSmallScreen || isTouch
+      ? "reduced"
+      : "full";
+
   return {
     tier,
     isMobile,
+    isSmallScreen,
     isTouch,
     gpuTier,
     prefersReducedMotion,
     isWindows,
     saveData,
     isLowEnd,
+    isWeakDevice,
+    canRunWebGL,
+    webglBudget,
   };
 }
 

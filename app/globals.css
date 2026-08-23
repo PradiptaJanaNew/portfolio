@@ -219,6 +219,28 @@ body {
     width: 0ch;
   }
 
+  /* ── Sticky stages that must stop pinning on small screens ──────
+     A `sticky top-0 h-[100svh]` stage works on desktop, where a section's
+     two columns sit side by side and fit the viewport. On a phone those
+     columns stack and the content is far taller than 100svh — and because
+     the stage also clips, the overflow is simply sliced off. That is what
+     cut the top third off the operator portrait: 1172px of content inside
+     an 844px stage with `overflow: hidden`.
+
+     Below the breakpoint the band stops pinning and just flows. Its
+     ScrollTriggers still run; they simply scrub over a shorter distance. */
+  @media (max-width: 767px) {
+    .pin-band {
+      min-height: 0;
+    }
+    .pin-band > .pin-stage {
+      position: static;
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+  }
+
   .grid-bg {
     background-image:
       linear-gradient(rgba(79, 156, 255, 0.08) 1px, transparent 1px),

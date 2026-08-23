@@ -52,8 +52,10 @@ const SPECS: ReadonlyArray<[string, string]> = [
  * hitches. Desktop only; mobile gets an editorial spec poster.
  */
 export function ShowcaseSection() {
-  const { isMobile, isLowEnd, prefersReducedMotion } = useDeviceCapabilities();
-  const use3D = !isMobile && !isLowEnd && !prefersReducedMotion;
+  const { canRunWebGL, prefersReducedMotion } = useDeviceCapabilities();
+  // "Rendered live in the browser" claims a real-time model — showing a static
+  // poster instead on every phone made the section's own headline untrue.
+  const use3D = canRunWebGL && !prefersReducedMotion;
 
   const rootRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -248,7 +250,7 @@ export function ShowcaseSection() {
         {/* ── The specimen plate ── */}
         <div
           data-plate
-          className="relative mt-7 aspect-[16/9] w-full overflow-hidden border"
+          className="relative mt-7 aspect-[4/5] w-full overflow-hidden border sm:aspect-[16/9]"
           style={{
             borderColor: `${ON_DARK_BONE}22`,
             background:
@@ -279,7 +281,10 @@ export function ShowcaseSection() {
           </div>
 
           {/* SVG leader lines from anchor → card edge (drawn on reveal) */}
-          <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <svg
+            /* Leader lines point at coordinates chosen for a 16:9 plate; on a
+               phone the plate is 4:5 and they cross the model. */
+            data-leaders aria-hidden className="pointer-events-none absolute inset-0 hidden h-full w-full sm:block" viewBox="0 0 100 100" preserveAspectRatio="none">
             {CALLOUTS.map((c) => {
               const edgeX = c.side === "left" ? 4 : 96;
               return (
@@ -300,12 +305,13 @@ export function ShowcaseSection() {
             })}
           </svg>
 
-          {/* Annotation cards pinned to plate edges */}
+          {/* Annotation cards pinned to plate edges. Hidden on phones — see the
+              stacked list below the plate. */}
           {CALLOUTS.map((c) => (
             <div
               key={c.n}
               data-callout
-              className="pointer-events-none absolute max-w-[40%]"
+              className="pointer-events-none absolute hidden max-w-[40%] sm:block"
               style={{
                 top: `${c.ay}%`,
                 transform: "translateY(-50%)",
@@ -324,6 +330,31 @@ export function ShowcaseSection() {
             ⊹ drag to orbit ⊹
           </div>
         </div>
+
+        {/* Phones get the annotations as a plain stacked list. The pinned
+            edge-cards above assume a wide plate with room either side of the
+            model; at 390px they simply sit on top of it. */}
+        <ul className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 sm:hidden" role="list">
+          {CALLOUTS.map((c) => (
+            <li key={c.n}>
+              <div className="font-mono text-[10px] tracking-[0.24em]" style={{ color: AMBER }}>
+                {c.n}
+              </div>
+              <div
+                className="font-grotesk text-[0.95rem] leading-tight"
+                style={{ fontWeight: 700, color: ON_DARK_BONE }}
+              >
+                {c.label}
+              </div>
+              <div
+                className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.12em]"
+                style={{ color: ON_DARK_STEEL }}
+              >
+                {c.sub}
+              </div>
+            </li>
+          ))}
+        </ul>
 
         {/* Spec ledger strip beneath the plate */}
         <div data-spec className="mt-5 grid grid-cols-2 gap-x-8 gap-y-2 border-t pt-4 font-mono text-[11px] uppercase tracking-[0.16em] sm:grid-cols-4" style={{ borderColor: `${ON_DARK_BONE}1a`, color: ON_DARK_STEEL }}>
