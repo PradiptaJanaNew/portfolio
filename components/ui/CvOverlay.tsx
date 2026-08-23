@@ -393,10 +393,9 @@ function PreviewPanel({
   closeBtnRef: React.RefObject<HTMLButtonElement>;
 }) {
   const links = [
-    // Derived from the URL so it can never drift from profile.socials again.
     {
       label: "GitHub",
-      value: profile.socials.github.replace(/^https?:\/\/(www\.)?github\.com\//, ""),
+      value: profile.socials.githubLabel,
       href: profile.socials.github,
       external: true,
     },

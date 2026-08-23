@@ -67,6 +67,10 @@ function Corner({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
 export function HudFrame() {
   const clock = useClock();
   return (
+    <>
+    {/* Fades page content into the background as it travels under the HUD,
+        so the two never read as colliding text. */}
+    <div aria-hidden className="hud-scrim" />
     <div className="pointer-events-none fixed inset-0 z-40 select-none">
       {/* FULL-BLEED: the opaque matte letterbox bars + inset border were
           removed so content reaches every edge. The corner brackets + HUD
@@ -91,6 +95,7 @@ export function HudFrame() {
         <span>{clock ? formatClock(clock) : "--:--:-- UTC"}</span>
       </div>
     </div>
+    </>
   );
 }
 

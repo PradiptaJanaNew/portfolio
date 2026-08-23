@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap, registerAll, ScrollTrigger } from "@/lib/gsap";
 import { useTheme } from "@/lib/useTheme";
+import { sceneStore } from "@/lib/sceneStore";
 
 // Accents read on BOTH themes — keep static.
 const AMBER = "#ff7a1a";
@@ -152,6 +153,23 @@ export function MetricsSection() {
             if (i !== indexRef.current) setIndex(i);
           },
         });
+
+        // Walk the ambient robot out of the gauge. Its pose curve parks it
+        // centre-frame here, which on a phone means directly over the figure
+        // the whole beat is about. Damped by the render loop, so it glides.
+        ScrollTrigger.create({
+          trigger: sectionRef.current!,
+          start: "top bottom",
+          end: "bottom top",
+          onUpdate: (self) => {
+            const k = Math.sin(Math.PI * self.progress);
+            const small =
+              typeof window.matchMedia === "function" &&
+              window.matchMedia("(max-width: 767px)").matches;
+            sceneStore.travelerOffset.x = k * (small ? 1.2 : 2.6);
+            sceneStore.travelerOffset.y = k * (small ? -9 : 2.2);
+          },
+        });
       }, sectionRef.current!);
 
       // Gentle auto-advance ONLY when the stage is parked in view and the
@@ -286,14 +304,14 @@ export function MetricsSection() {
       id="metrics"
       ref={sectionRef}
       aria-labelledby="metrics-title"
-      className="pin-band relative w-full min-h-[260vh]"
+      className="metrics-band relative w-full min-h-[260vh]"
       style={{ color: BONE }}
     >
       {/* Sticky stage — CSS-pinned while the tall section scrolls past it.
           NO GSAP pin. overflow-hidden contained here. */}
       <div
         ref={stageRef}
-        className="pin-stage sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]"
+        className="pin-stage sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(20px,5vw,96px)] pb-[clamp(24px,4vh,96px)] pt-[var(--hud-inset)]"
         style={{ transform: "translateZ(0)" }}
       >
         {/* local atmosphere */}
@@ -321,16 +339,17 @@ export function MetricsSection() {
                 className="inline-block h-1.5 w-1.5 rounded-full"
                 style={{ background: AMBER, boxShadow: `0 0 8px ${AMBER}` }}
               />
-              SYS.METRICS · UNIVERSE IN NUMBERS
+              <span className="sm:hidden">SYS.METRICS</span>
+              <span className="hidden sm:inline">SYS.METRICS · UNIVERSE IN NUMBERS</span>
             </span>
             <span className="tabular-nums" style={{ color: AMBER }}>
               {String(index + 1).padStart(2, "0")} / {String(METRICS.length).padStart(2, "0")}
             </span>
           </div>
 
-          <div className="mt-8 grid items-center gap-10 md:mt-10 md:grid-cols-[1fr_0.82fr] md:gap-16">
+          <div className="mt-5 grid items-center gap-6 md:mt-10 md:grid-cols-[1fr_0.82fr] md:gap-16">
             {/* Feature: arc gauge + giant figure */}
-            <div className="relative mx-auto aspect-square w-full max-w-[480px]">
+            <div className="relative mx-auto aspect-square w-full max-w-[min(480px,34svh)] md:max-w-[480px]">
               <svg
                 viewBox="0 0 300 300"
                 className="absolute inset-0 h-full w-full -rotate-90"
@@ -544,6 +563,16 @@ export function MetricsSection() {
           </div>
         </div>
       </div>
+      <style jsx>{`
+        /* A shorter hold on phones: 260vh is four stats over two and a half
+           screens of scrolling, which is a long time to be held in place on a
+           handset. 190vh still gives each stat a clear beat. */
+        @media (max-width: 767px) {
+          .metrics-band {
+            min-height: 190vh;
+          }
+        }
+      `}</style>
     </section>
   );
 }

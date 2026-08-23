@@ -26,6 +26,16 @@
   --line-strong: rgba(231, 236, 245, 0.22);
   --accent: var(--amber);
   --radius: 14px;
+  /* Vertical space the fixed HUD occupies at the top of the viewport.
+     Every section reserves this so its first line never starts under the
+     chrome. Keep in sync with HudFrame / ThemeToggle offsets. */
+  --hud-inset: 52px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --hud-inset: 66px;
+  }
 }
 
 /* DAY — warm parchment light mode. Surfaces lighten, ink darkens; the bright
@@ -217,6 +227,36 @@ body {
     white-space: pre;
     vertical-align: bottom;
     width: 0ch;
+  }
+
+  /* ── The fixed HUD band ─────────────────────────────────────────
+     The HUD (corner brackets, DEV.OS label, clock, theme pill) floats over
+     the page at z-40+. Nothing reserved room for it, so every section's
+     kicker started inside that band and the two sets of text sat on top of
+     each other while scrolling.
+
+     Two parts to the fix, and both matter:
+       1. `--hud-inset` is reserved at the top of every section, so content
+          never STARTS underneath the chrome.
+       2. `.hud-scrim` fades the page into the background behind the chrome,
+          so content passing THROUGH on its way up reads as depth rather
+          than as a collision. Reserving space alone would not fix that —
+          scrolling content still has to travel under the bar. */
+  .hud-scrim {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--hud-inset) + 40px);
+    z-index: 39;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 78%, transparent) 42%,
+      color-mix(in srgb, var(--bg) 30%, transparent) 72%,
+      transparent 100%
+    );
   }
 
   /* ── Sticky stages that must stop pinning on small screens ──────

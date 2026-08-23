@@ -44,7 +44,7 @@ export const SectionFrame = forwardRef<HTMLElement, SectionFrameProps>(
           "relative w-full overflow-hidden",
           // Inside-the-frame padding. 24px frame + 8px gap to labels +
           // 32px breathing room = ~64px target on desktop.
-          "px-[clamp(20px,5vw,96px)] py-[clamp(56px,5vh,120px)]",
+          "px-[clamp(20px,5vw,96px)] pb-[clamp(56px,5vh,120px)] pt-[calc(var(--hud-inset)+clamp(20px,3vh,56px))]",
           // min-h-[100svh] (small viewport units) accounts for iOS
           // Safari's collapsing address bar — using min-h-screen (100vh)
           // here causes content to jump as the URL bar shows/hides.

@@ -8,6 +8,13 @@
 
 export interface SocialLinks {
   github: string;
+  /**
+   * How the GitHub account is DISPLAYED. The account is `PradiptaJanaNew`
+   * (the plain handle was taken), which reads awkwardly on a CV, so the UI
+   * shows a clean label while every link still points at the real profile.
+   * Never build a URL out of this.
+   */
+  githubLabel: string;
   linkedin: string;
   x: string;
   email: string;
@@ -50,6 +57,7 @@ export const profile: Profile = {
   roles: ["Frontend", "Full-Stack", "React Native", "Cloud / DevOps", "WordPress"],
   socials: {
     github: "https://github.com/PradiptaJanaNew",
+    githubLabel: "pradiptajana",
     linkedin: "https://www.linkedin.com/in/pradiptakumarjana",
     x: "https://x.com/",
     email: "pradiptajana.co@gmail.com",

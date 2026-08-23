@@ -17,7 +17,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={`Switch to ${day ? "night" : "day"} mode`}
       title={`Switch to ${day ? "night" : "day"} mode`}
-      className="group pointer-events-auto fixed left-1/2 top-3 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.28em] backdrop-blur-sm transition-colors md:top-5"
+      className="group pointer-events-auto fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[60] flex h-11 items-center gap-2 rounded-full border px-4 font-mono text-[10px] uppercase tracking-[0.28em] backdrop-blur-sm transition-colors md:bottom-auto md:left-1/2 md:right-auto md:top-5 md:h-auto md:-translate-x-1/2 md:px-3 md:py-1.5"
       style={{
         borderColor: "rgba(255,255,255,0.14)",
         background: "rgba(11,15,25,0.5)",

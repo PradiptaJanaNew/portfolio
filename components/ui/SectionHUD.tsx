@@ -72,11 +72,15 @@ export function SectionHUD() {
   return (
     <>
       {/* Mobile: compact horizontal strip near the top, below HUD top labels.
-          top-14 (was top-10) so it clears the HudFrame top labels at
+          top-3: the theme pill moved to the thumb zone on phones, which
+          freed the top band, so this rail now sits inside the reserved
+          --hud-inset and reads as the app's status bar. At top-14 it sat
+          just below the inset and collided with every section kicker.
+          (was: top-14 to clear the HudFrame top labels at
           375/414px. */}
       <div
         aria-label="Section progress"
-        className="pointer-events-none fixed left-4 right-4 top-14 z-50 flex select-none items-center gap-2 font-mono uppercase md:hidden"
+        className="pointer-events-none fixed left-4 right-4 top-3 z-50 flex select-none items-center gap-2 font-mono uppercase md:hidden"
       >
         <span className="text-[9px] tracking-[0.28em] text-ink-dim">[</span>
         <span className="text-[9px] tracking-[0.28em] text-[#FF7A1A]">{active.num}</span>

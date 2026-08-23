@@ -231,7 +231,7 @@ export function PortraitSection() {
         aria-labelledby="operator-title"
         className="operator-band relative w-full min-h-[220vh]"
       >
-      <div className="pin-stage sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]">
+      <div className="pin-stage sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(20px,5vw,96px)] pb-[clamp(24px,4vh,96px)] pt-[var(--hud-inset)]">
         {/* local atmosphere */}
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
           <div

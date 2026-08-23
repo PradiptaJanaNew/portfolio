@@ -466,7 +466,7 @@ export function TerminalSection() {
       {/* Sticky stage — CSS-pinned while the tall band scrolls past it, the
           same no-GSAP-pin pattern SYS.METRICS uses. overflow-hidden is
           contained HERE so the 3D entrance never leaks past the frame. */}
-      <div className="sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]">
+      <div className="sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(20px,5vw,96px)] pb-[clamp(24px,4vh,96px)] pt-[var(--hud-inset)]">
         {/* WebGL floor + data rain. Desktop / high-tier only; parked
             (frameloop:'never') whenever the band is off screen. */}
         {canUseGl && (
