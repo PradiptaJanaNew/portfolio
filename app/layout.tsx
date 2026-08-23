@@ -65,11 +65,10 @@ const SHARE_BLURB =
 
 export const metadata: Metadata = {
   // `metadataBase` is what every share surface resolves og:image and the
-  // canonical link against. It used to fall back to a hardcoded
-  // `portfolio.vercel.app` — a domain this project does not own — so a
-  // deploy without NEXT_PUBLIC_SITE_URL advertised its banner from someone
-  // else's host and every WhatsApp/LinkedIn/Slack preview came up empty.
-  // See lib/siteUrl.ts for the resolution order.
+  // canonical link against. lib/siteUrl.ts owns that decision — read the note
+  // there before changing how the origin is derived; getting it wrong points
+  // canonical, the sitemap and every social preview at the wrong host, and
+  // does so silently.
   metadataBase: new URL(SITE_URL),
   title: {
     default: TITLE,

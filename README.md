@@ -33,37 +33,42 @@ Node 20 (see `.nvmrc`).
 
 ## Environment
 
-One variable, and it matters more than it looks:
+Nothing is required. `lib/siteUrl.ts` holds the canonical production domain,
+so a normal deploy resolves correctly with no configuration.
+
+`NEXT_PUBLIC_SITE_URL` exists as an override for forks and staging hosts:
 
 ```
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NEXT_PUBLIC_SITE_URL=https://some-other-host.com
 ```
 
-It is the origin that `metadataBase`, the canonical link, `robots.txt` and
-`sitemap.xml` all resolve against. Point it at the wrong host and the link
-preview silently breaks — WhatsApp, LinkedIn and Slack fetch `og:image` from
-whatever this names, and render a bare text link when that fetch fails.
+Whatever resolves is the origin that `metadataBase`, the canonical link,
+`robots.txt` and `sitemap.xml` all point at — and the host WhatsApp, LinkedIn
+and Slack fetch `og:image` from.
 
-On Vercel it can be left unset: `lib/siteUrl.ts` falls back to
-`VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL`. Set it explicitly once a
-custom domain is attached.
+**When the domain changes, edit `PRODUCTION_URL` in `lib/siteUrl.ts`.** Do not
+rely on Vercel's `VERCEL_PROJECT_PRODUCTION_URL`: on this project it returns
+the auto-generated `*.vercel.app` host rather than the domain actually attached
+to it, which silently made every canonical URL wrong.
 
 ## Deploy
 
 Built for Vercel — import the repo and it builds with zero configuration.
 
 1. **New Project → import this repository.** Framework preset: Next.js.
-2. Add `NEXT_PUBLIC_SITE_URL` under Settings → Environment Variables once the
-   domain is known (Production scope).
-3. Deploy.
+2. Deploy. No environment variables needed.
 
 `vercel.json` pins the serverless region to `iad1` and sets baseline security
 headers. The region only affects the on-demand routes (`/opengraph-image`,
 `/icon`, `/apple-icon`); everything else is static and served from the edge.
 Switch it to `bom1` if most visitors are in India.
 
-After the first deploy, check the share card renders:
-`https://your-domain.com/opengraph-image` should return a 1200×630 PNG.
+After deploying, confirm the metadata points at the right host:
+
+```bash
+curl -s https://pradipta-jana.vercel.app/robots.txt   # Host: + Sitemap: lines
+curl -sI https://pradipta-jana.vercel.app/opengraph-image | head -2   # 1200x630 PNG
+```
 
 ## How the scroll engine works
 
