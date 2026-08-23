@@ -127,7 +127,7 @@ export function KineticRevealSection() {
       id="manifest"
       ariaLabelledBy="manifest-title"
       bare
-      className="flex min-h-[100svh] items-center py-[clamp(80px,12vh,160px)]"
+      className="flex min-h-[100svh] items-center py-[clamp(56px,12vh,160px)]"
     >
       <div ref={rootRef} className="relative mx-auto w-full max-w-6xl text-bone">
         {/* Revealing "surface" — the slab the type is etched into. */}

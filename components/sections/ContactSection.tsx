@@ -36,7 +36,7 @@ const CHANNELS: ReadonlyArray<Channel> = [
   {
     idx: "01",
     label: "GITHUB",
-    handle: "Pradipta-Bitpastel",
+    handle: "PradiptaJanaNew",
     href: profile.socials.github,
     external: true,
   },

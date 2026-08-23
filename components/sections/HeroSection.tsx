@@ -369,6 +369,18 @@ export function HeroSection() {
       aria-labelledby="hero-name"
       className="hero-band relative w-full min-h-[200vh] bg-bg"
     >
+      <style jsx>{`
+        /* 200vh of drone descent is a desktop luxury. On a phone the identity
+           has fully faded by ~65% of it, so the last stretch is a screen of
+           parallax with nothing to read. 150vh keeps the crane, drops the
+           dead scroll. */
+        @media (max-width: 767px) {
+          .hero-band {
+            min-height: 150vh;
+          }
+        }
+      `}</style>
+
       {/* Sticky stage — CSS-pinned in the viewport while the tall section
           scrolls through it (NO GSAP pin). overflow-hidden lives HERE so
           the parallax never exposes an edge; the section above stays a

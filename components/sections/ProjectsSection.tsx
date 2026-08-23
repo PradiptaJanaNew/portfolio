@@ -250,7 +250,7 @@ export function ProjectsSection() {
       id="projects"
       ariaLabelledBy="projects-title"
       bare
-      className="relative pt-[clamp(64px,10vh,140px)]"
+      className="relative pt-[clamp(56px,10vh,140px)]"
     >
       {/* Local atmosphere: a soft amber wash anchored to the section. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">

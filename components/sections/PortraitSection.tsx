@@ -198,8 +198,15 @@ export function PortraitSection() {
           end: "bottom top",
           onUpdate: (self) => {
             const k = Math.sin(Math.PI * self.progress);
-            sceneStore.travelerOffset.x = k * 3.2;
-            sceneStore.travelerOffset.y = k * -3.6;
+            const small =
+              typeof window.matchMedia === "function" &&
+              window.matchMedia("(max-width: 767px)").matches;
+            // On a phone there is simply no margin to park it in, so it is
+            // walked out of frame entirely for the length of this beat. The
+            // render loop damps the move, so it glides away rather than
+            // popping. Desktop keeps it in the lower-right margin.
+            sceneStore.travelerOffset.x = k * (small ? 1.4 : 3.2);
+            sceneStore.travelerOffset.y = k * (small ? -9 : -3.6);
           },
         });
       }, rootRef.current);
@@ -222,7 +229,7 @@ export function PortraitSection() {
         id="operator"
         ref={sectionRef}
         aria-labelledby="operator-title"
-        className="operator-band pin-band relative w-full min-h-[220vh]"
+        className="operator-band relative w-full min-h-[220vh]"
       >
       <div className="pin-stage sticky top-0 flex h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(32px,5vh,96px)]">
         {/* local atmosphere */}
@@ -258,12 +265,16 @@ export function PortraitSection() {
             </span>
           </div>
 
-          <div className="mt-10 grid items-center gap-10 md:mt-14 md:grid-cols-[0.86fr_1fr] md:gap-16">
+          <div className="mt-6 grid items-center gap-6 md:mt-14 md:grid-cols-[0.86fr_1fr] md:gap-16">
             {/* ── Left: the WebGL plate ─────────────────────────────── */}
-            <div data-reveal className="relative mx-auto w-full max-w-[440px]">
+            {/* On a phone the plate is sized by HEIGHT (36svh) rather than
+                width. Sized by width it was 358x477, and the stacked column
+                came to 1172px inside an 844px stage — which is what forced
+                this section to stop pinning and cropped the portrait. */}
+            <div data-reveal className="relative mx-auto w-full max-w-[min(440px,48svh)] md:max-w-[440px]">
               <div
                 ref={plateRef}
-                className="crop-frame relative aspect-[3/4] w-full overflow-hidden"
+                className="crop-frame relative aspect-[3/4] max-h-[40svh] w-full overflow-hidden md:max-h-none"
                 style={{ border: `1px solid ${LINE_STRONG}`, background: SURFACE }}
               >
                 {canUseGl ? (
@@ -361,7 +372,9 @@ export function PortraitSection() {
 
               <p
                 data-reveal
-                className="mt-6 max-w-md text-[15px] leading-[1.8]"
+                /* Hidden on phones: it restates SYS.INIT's bio a screen
+                   earlier, and the pinned beat needs the vertical budget. */
+                className="mt-6 hidden max-w-md text-[15px] leading-[1.8] md:block"
                 style={{ color: STEEL }}
               >
                 3+ years building and shipping production web applications —
@@ -370,7 +383,7 @@ export function PortraitSection() {
               </p>
 
               {/* identity ledger */}
-              <ul className="mt-8 font-mono text-[11.5px]" role="list">
+              <ul className="mt-5 font-mono text-[11.5px] md:mt-8" role="list">
                 {LEDGER.map(([k, v]) => (
                   <li
                     key={k}
@@ -402,7 +415,7 @@ export function PortraitSection() {
               </ul>
 
               {/* CV actions */}
-              <div data-reveal className="mt-9 flex flex-wrap items-center gap-4">
+              <div data-reveal className="mt-6 flex flex-wrap items-center gap-3 md:mt-9 md:gap-4">
                 <MagneticButton
                   type="button"
                   onClick={() => setCvMode("download")}
@@ -447,7 +460,7 @@ export function PortraitSection() {
 
               <p
                 data-reveal
-                className="mt-4 font-mono text-[10px] uppercase tracking-[0.26em]"
+                className="mt-3 font-mono text-[10px] uppercase tracking-[0.26em] md:mt-4"
                 style={{ color: STEEL }}
               >
                 PDF · 159 KB · 2 pages
@@ -468,7 +481,7 @@ export function PortraitSection() {
         }
         @media (max-width: 767px) {
           .operator-band {
-            min-height: 170vh;
+            min-height: 200vh;
           }
         }
       `}</style>

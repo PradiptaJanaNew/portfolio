@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap, registerAll, SplitText } from "@/lib/gsap";
 import { SectionFrame } from "@/components/ui/SectionFrame";
 import { skills, MODULE_ORDER } from "@/content/skills";
@@ -20,6 +20,13 @@ const STEEL = "var(--ink-faint)";
  * typographic interaction carries it.
  */
 export function SkillsSection() {
+  // Phones get a real accordion: one module open at a time, opened by tap.
+  // Every manifest used to be forced open on touch (`max-md:grid-rows-[1fr]`),
+  // which made this the tallest section on the site at three full viewports
+  // of passive scrolling. One open row reads as an app; five reads as a
+  // document. Desktop keeps hover-to-open and is untouched.
+  const [openIdx, setOpenIdx] = useState<number>(0);
+
   const rootRef = useRef<HTMLDivElement>(null);
 
   // Orchestrated reveals (headline line-clip + index rows) and the
@@ -160,7 +167,7 @@ export function SkillsSection() {
   }, []);
 
   return (
-    <SectionFrame id="skills" ariaLabelledBy="skills-title" bare className="py-[clamp(80px,12vh,160px)]">
+    <SectionFrame id="skills" ariaLabelledBy="skills-title" bare className="py-[clamp(56px,12vh,160px)]">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute left-[6%] bottom-[8%] h-[46vh] w-[46vh] rounded-full opacity-[0.10] blur-[130px]" style={{ background: AMBER }} />
         <div className="absolute right-[10%] top-[14%] h-[34vh] w-[34vh] rounded-full opacity-[0.07] blur-[140px]" style={{ background: "#9b5cff" }} />
@@ -208,13 +215,16 @@ export function SkillsSection() {
               <div
                 key={id}
                 data-row
-                className="group/row relative border-b [perspective:1100px]"
+                onClick={() => setOpenIdx((cur) => (cur === i ? -1 : i))}
+                className="group/row relative cursor-pointer border-b [perspective:1100px] md:cursor-default"
                 style={{ borderColor: "var(--line)" }}
               >
                 {/* vertical accent rail — grows from the index gutter on hover */}
                 <span
                   aria-hidden
-                  className="absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 transition-transform duration-500 ease-out group-hover/row:scale-y-100 max-md:scale-y-100"
+                  className={`absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 transition-transform duration-500 ease-out group-hover/row:scale-y-100 ${
+                    openIdx === i ? "max-md:scale-y-100" : "max-md:scale-y-0"
+                  }`}
                   style={{ background: m.accent, boxShadow: `0 0 16px ${m.accent}` }}
                 />
 
@@ -270,7 +280,9 @@ export function SkillsSection() {
                       {/* expand indicator: rotates + colors on hover */}
                       <span
                         aria-hidden
-                        className="relative grid h-9 w-9 place-items-center rounded-full border transition-all duration-[400ms] group-hover/row:rotate-90 group-hover/row:border-transparent"
+                        className={`relative grid h-11 w-11 place-items-center rounded-full border transition-all duration-[400ms] group-hover/row:rotate-90 group-hover/row:border-transparent md:h-9 md:w-9 ${
+                          openIdx === i ? "max-md:rotate-45" : ""
+                        }`}
                         style={{ borderColor: "var(--line-strong)", ["--acc" as string]: m.accent }}
                       >
                         <span
@@ -285,7 +297,11 @@ export function SkillsSection() {
                   </div>
 
                   {/* Expanding detail — hover on desktop, always open on touch */}
-                  <div className="grid grid-rows-[0fr] pl-5 transition-[grid-template-rows] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/row:grid-rows-[1fr] max-md:grid-rows-[1fr] md:pl-8">
+                  <div
+                    className={`grid grid-rows-[0fr] pl-5 transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/row:grid-rows-[1fr] md:pl-8 ${
+                      openIdx === i ? "max-md:grid-rows-[1fr]" : "max-md:grid-rows-[0fr]"
+                    }`}
+                  >
                     <div className="line-mask">
                       <div className="flex flex-col gap-5 pb-7 pt-1 md:flex-row md:items-end md:justify-between md:gap-10">
                         <p className="max-w-md font-serif text-[clamp(1.1rem,1.9vw,1.5rem)] italic leading-snug" style={{ color: "var(--ink-dim)" }}>

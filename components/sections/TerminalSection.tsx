@@ -98,18 +98,25 @@ type BootKind = "head" | "sys" | "ok" | "warn";
 type BootLine = { k: BootKind; t: string };
 
 const BOOT: readonly BootLine[] = [
-  { k: "head", t: "dev.os 3.1.4 — cold boot — core@portfolio" },
-  { k: "sys", t: "power-on self test ............ pass" },
-  { k: "ok", t: "mount /dev/core ............... ok" },
-  { k: "ok", t: "module frontend ............... react · next · typescript" },
-  { k: "ok", t: "module backend ................ node · django · postgres" },
-  { k: "ok", t: "module devops ................. docker · nginx · ci/cd" },
-  { k: "ok", t: "module cloud .................. azure · gcp" },
-  { k: "ok", t: "module mobile ................. react native · expo" },
-  { k: "sys", t: "uplink kolkata:in ............. 24ms" },
-  { k: "warn", t: "operator status ............... OPEN FOR WORK" },
-  { k: "ok", t: "control surface ............... online" },
-  { k: "sys", t: "the prompt below is live — type 'help'" },
+  // KEEP EVERY LINE UNDER ~32 CHARACTERS.
+  //
+  // Each row is `white-space: pre` inside a `ch`-width cell — that is what
+  // makes the typing land on whole glyphs — which also means a line cannot
+  // wrap. The original rows ran to 57 characters and were simply cut off the
+  // right edge of a phone. Measure before adding one: 32ch at the mobile
+  // 11px mono is ~205px inside a ~318px console.
+  { k: "head", t: "dev.os 3.1.4 — cold boot" },
+  { k: "sys", t: "power-on self test ... pass" },
+  { k: "ok", t: "mount /dev/core ...... ok" },
+  { k: "ok", t: "frontend .. react · next · ts" },
+  { k: "ok", t: "backend ... node · django" },
+  { k: "ok", t: "devops .... docker · nginx" },
+  { k: "ok", t: "cloud ..... azure · gcp" },
+  { k: "ok", t: "mobile .... react native · expo" },
+  { k: "sys", t: "uplink kolkata:in .... 24ms" },
+  { k: "warn", t: "operator ... OPEN FOR WORK" },
+  { k: "ok", t: "control surface ...... online" },
+  { k: "sys", t: "type 'help' — prompt is live" },
 ];
 
 /** Per-kind text colour, matched to the console's accent roles. */
@@ -596,12 +603,12 @@ export function TerminalSection() {
                 single scanline when the console powers on. */}
             <div
               data-crt
-              className="relative z-10 origin-center px-4 pb-4 pt-4 text-[12.5px] leading-[1.65] sm:px-6 sm:pb-5 sm:text-[13px]"
+              className="relative z-10 origin-center px-3.5 pb-4 pt-4 text-[11px] leading-[1.7] sm:px-6 sm:pb-5 sm:text-[13px]"
             >
               {/* Scrollback: the scroll-typed boot log, then live output. */}
               <div
                 ref={scrollRef}
-                className="terminal-scroll h-[42vh] space-y-0.5 overflow-y-auto pr-1"
+                className="terminal-scroll h-[38svh] space-y-0.5 overflow-x-hidden overflow-y-auto pr-1 sm:h-[42vh]"
               >
                 {BOOT.map((b) => (
                   <div
@@ -746,7 +753,7 @@ export function TerminalSection() {
            eat a third of the page's scroll on a small screen. */
         @media (max-width: 767px) {
           .shell-band {
-            min-height: 190vh;
+            min-height: 155vh;
           }
         }
         /* Terminal-window surfaces — theme-aware via the <html data-theme>

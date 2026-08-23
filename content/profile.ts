@@ -49,7 +49,7 @@ export const profile: Profile = {
   ],
   roles: ["Frontend", "Full-Stack", "React Native", "Cloud / DevOps", "WordPress"],
   socials: {
-    github: "https://github.com/Pradipta-Bitpastel",
+    github: "https://github.com/PradiptaJanaNew",
     linkedin: "https://www.linkedin.com/in/pradiptakumarjana",
     x: "https://x.com/",
     email: "pradiptajana.co@gmail.com",

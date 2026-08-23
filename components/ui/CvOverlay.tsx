@@ -393,7 +393,13 @@ function PreviewPanel({
   closeBtnRef: React.RefObject<HTMLButtonElement>;
 }) {
   const links = [
-    { label: "GitHub", value: "Pradipta-Bitpastel", href: profile.socials.github, external: true },
+    // Derived from the URL so it can never drift from profile.socials again.
+    {
+      label: "GitHub",
+      value: profile.socials.github.replace(/^https?:\/\/(www\.)?github\.com\//, ""),
+      href: profile.socials.github,
+      external: true,
+    },
     { label: "LinkedIn", value: "in/pradiptakumarjana", href: profile.socials.linkedin, external: true },
     { label: "Email", value: profile.socials.email, href: `mailto:${profile.socials.email}`, external: false },
     { label: "Phone", value: profile.socials.phone, href: `tel:${profile.socials.phone.replace(/\s+/g, "")}`, external: false },

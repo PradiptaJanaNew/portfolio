@@ -207,7 +207,7 @@ export function ShowcaseSection() {
       id="showcase"
       aria-labelledby="showcase-title"
       ref={rootRef}
-      className="relative flex min-h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(48px,7vh,120px)]"
+      className="relative flex min-h-[100svh] w-full items-center overflow-hidden px-[clamp(16px,5vw,96px)] py-[clamp(56px,7vh,120px)]"
     >
       {/* local atmosphere */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
