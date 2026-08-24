@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { gsap, registerAll, SplitText } from "@/lib/gsap";
 import { profile } from "@/content/profile";
 import { getSection } from "@/lib/sections";
@@ -29,6 +29,83 @@ const ROLES = [
   "REACT NATIVE DEVELOPER",
   "CLOUD / DEVOPS ENGINEER",
 ];
+
+/* ------------------------------------------------------------------ *
+ *  HERO INK — one ink set per theme, injected as CSS vars on the
+ *  identity block.
+ *
+ *  The identity sits on PAINTED ARTWORK, not on `--bg`, so the global
+ *  tokens don't help here: the pixels behind a given line are whatever
+ *  the mountain happens to be. Measured against the real render, the
+ *  old single (night-tuned) palette failed everywhere —
+ *    night  role  #4f9cff on the blue ridge ........ 2.5:1
+ *    day    role  #4f9cff on the orange ridge ...... 1.6:1
+ *    day    eyebrow #a9c6ff on the gold sky ........ 1.0:1  (invisible)
+ *  — because a cool blue ink lands on a cool blue ridge at night and on
+ *  a warm ridge of the SAME luminance in day.
+ *
+ *  Two fixes together, because either alone is not enough:
+ *   1. `scrim*` paints a soft feathered haze under the block (see
+ *      `.hero-scrim`) so every line reads against a KNOWN field instead
+ *      of whatever the painting puts there. It is a radial, not a box —
+ *      it reads as valley haze, and the cliff/hiker/trees stay untouched.
+ *   2. Every ink below is then chosen against that scrimmed field and
+ *      verified >= 4.5:1 (>= 3:1 for the display wordmark, which is
+ *      large text). Day inks go BRIGHTER, not darker — under a scrim the
+ *      local field is dark in both themes, so a "light mode = dark ink"
+ *      reflex would put it right back at 1.4:1.
+ *
+ *  `role*` is the three-stop gradient the role line is clipped to. Every
+ *  stop is verified on its own: a gradient is only as legible as its
+ *  darkest stop, so the ramp stays inside the light end of the hue.
+ * ------------------------------------------------------------------ */
+type HeroInk = Record<string, string>;
+
+const HERO_INK: Record<"night" | "day", HeroInk> = {
+  night: {
+    "--hero-eyebrow": "#cfe0ff", //  11.2:1
+    "--hero-pip": "#63b0ff",
+    "--hero-name-accent": "#ff7a1a", //   5.1:1 (large)
+    "--hero-name-light": "#f2f7ff",
+    "--hero-label": "rgba(207,224,255,0.74)",
+    "--hero-role-a": "#f2f9ff", //  13.1:1
+    "--hero-role-b": "#a8dbff",
+    "--hero-role-c": "#5fb0ff", //   5.8:1  (darkest stop)
+    "--hero-caret": "#8ac8ff",
+    "--hero-body": "#e2ecfd",
+    "--hero-dim": "rgba(206,222,247,0.88)",
+    "--hero-meter": "#7cc0ff",
+    "--hero-scrim-top": "rgba(4,8,20,0.30)",
+    "--hero-scrim-core": "rgba(4,8,20,0.40)",
+    "--hero-scrim-halo": "rgba(4,8,20,0.20)",
+    "--hero-shadow":
+      "0 1px 2px rgba(0,0,0,0.62), 0 2px 10px rgba(0,0,0,0.45)",
+    "--hero-ink-shadow": "0 1px 2px rgba(2,6,16,0.66)",
+  },
+  day: {
+    "--hero-eyebrow": "#ffe6bf", //   5.9:1
+    "--hero-pip": "#ffb45c",
+    "--hero-name-accent": "#ffa53d", //   3.7:1 (large)
+    "--hero-name-light": "#fff6e8",
+    "--hero-label": "rgba(255,230,191,0.76)",
+    "--hero-role-a": "#fff6e4", //  10.9:1
+    "--hero-role-b": "#ffd79a",
+    "--hero-role-c": "#ffab52", //   6.5:1  (darkest stop)
+    "--hero-caret": "#ffbe72",
+    "--hero-body": "#f7e9d4",
+    "--hero-dim": "rgba(240,222,196,0.9)",
+    "--hero-meter": "#ffc078",
+    // Warm-tinted and stronger: the day sky is the brightest surface on
+    // the whole site, so a neutral/black haze would read as a grey smudge
+    // over golden hour instead of dusk.
+    "--hero-scrim-top": "rgba(30,12,2,0.52)",
+    "--hero-scrim-core": "rgba(30,12,2,0.52)",
+    "--hero-scrim-halo": "rgba(30,12,2,0.28)",
+    "--hero-shadow":
+      "0 1px 2px rgba(46,18,0,0.72), 0 2px 12px rgba(28,10,0,0.55)",
+    "--hero-ink-shadow": "0 1px 2px rgba(40,16,0,0.6)",
+  },
+};
 
 /* ------------------------------------------------------------------ *
  *  Firewatch parallax — 7 real photographic layers (m7-0 sky/back ..
@@ -379,6 +456,86 @@ export function HeroSection() {
             min-height: 150vh;
           }
         }
+
+        /* ---- legibility haze under the identity -------------------------
+           Three stacked radials, not one box:
+             top   sits over the eyebrow + wordmark. The painted sky is at
+                   its BRIGHTEST there and darkens downhill, so the haze is
+                   shaped inversely to the artwork instead of uniformly: it
+                   pays for contrast exactly where the sky costs it, and
+                   never re-darkens the forest, which already reads at 10:1.
+                   Without it the day eyebrow measured 2.5:1.
+             core  holds the role line and tagline.
+             halo  contributes almost no opacity; its whole job is to
+                   stretch the falloff far enough that the edge never bands
+                   into a visible oval.
+           Every one is elliptical and narrower than the stage, so the
+           cliff, the hiker and the ridge keep their bright sky and the
+           result reads as haze in the valley, not a panel. Sized in % of
+           the identity block, so it tracks the type at every viewport
+           instead of needing its own breakpoints. */
+        .hero-scrim {
+          position: absolute;
+          inset: -14%;
+          z-index: 0;
+          pointer-events: none;
+          background:
+            radial-gradient(
+              60% 32% at 50% 33%,
+              var(--hero-scrim-top),
+              transparent 76%
+            ),
+            radial-gradient(
+              54% 42% at 50% 52%,
+              var(--hero-scrim-core),
+              transparent 72%
+            ),
+            radial-gradient(
+              92% 74% at 50% 48%,
+              var(--hero-scrim-halo),
+              transparent 78%
+            );
+        }
+
+        /* ---- the role line ----------------------------------------------
+           Clipped to a three-stop gradient in the CURRENT theme's hue: cool
+           and bright at night, warm and bright in day. GSAP's TextPlugin
+           rewrites this node's text on every cycle, so inline-block keeps
+           the gradient box hugging whatever word is currently typed —
+           otherwise the ramp is measured against a stale width and the
+           short roles come out flat.
+
+           The drop is a filter, NOT a text-shadow: with the fill
+           transparent for the clip, a text-shadow paints a solid opaque
+           silhouette THROUGH the glyphs. drop-shadow follows the clipped
+           pixels, so the gradient keeps its dark edge. */
+        .hero-role {
+          display: inline-block;
+          background-image: linear-gradient(
+            96deg,
+            var(--hero-role-a) 0%,
+            var(--hero-role-b) 52%,
+            var(--hero-role-c) 100%
+          );
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+        }
+
+        /* Forced-colors (Windows High Contrast) throws away the background
+           image, which would leave a transparent fill and no role at all. */
+        @media (forced-colors: active) {
+          .hero-role {
+            color: CanvasText;
+            -webkit-text-fill-color: CanvasText;
+            filter: none;
+          }
+          .hero-scrim {
+            display: none;
+          }
+        }
       `}</style>
 
       {/* Sticky stage — CSS-pinned in the viewport while the tall section
@@ -627,16 +784,34 @@ export function HeroSection() {
         <div
           ref={identityRef}
           className="hero-identity layer-3d absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center will-change-transform"
+          style={HERO_INK[day ? "day" : "night"] as CSSProperties}
         >
+          {/* Legibility haze. Lives INSIDE the identity so it inherits the
+              block's scroll fade + recede for free (the rAF loop writes
+              opacity/transform on this element) — a scrim mounted outside
+              would linger as a dark blot after the text had gone. It is the
+              first child and every text line lives in `.hero-ident-inner`
+              (position:relative), so paint order alone puts the haze
+              underneath: no negative z-index, which `preserve-3d` on
+              `.layer-3d` sorts unreliably. */}
+          <div aria-hidden className="hero-scrim" />
+
+          <div className="hero-ident-inner relative flex flex-col items-center">
           <span
             data-hero
             className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.32em]"
-            style={{ color: "#a9c6ff" }}
+            style={{
+              color: "var(--hero-eyebrow)",
+              textShadow: "var(--hero-ink-shadow)",
+            }}
           >
             <span
               aria-hidden
               className="inline-block h-1.5 w-1.5 rounded-full"
-              style={{ background: "#4f9cff", boxShadow: "0 0 10px #4f9cff" }}
+              style={{
+                background: "var(--hero-pip)",
+                boxShadow: "0 0 10px var(--hero-pip)",
+              }}
             />
             {HERO.eyebrow}
           </span>
@@ -654,14 +829,21 @@ export function HeroSection() {
               // Crisp legibility on BOTH the dark night sky and the bright day
               // sky — a tight dark edge + a small soft drop (NOT a 50px blur,
               // which showed as an ugly dark blob over the bright day scene).
-              textShadow:
-                "0 1px 2px rgba(0,0,0,0.6), 0 2px 10px rgba(0,0,0,0.45)",
+              // Warmer and heavier in day, where the sky it has to cut through
+              // is the brightest surface on the site.
+              textShadow: "var(--hero-shadow)",
             }}
           >
-            <span className="line-mask block text-[clamp(3rem,12vw,8rem)] text-[#FF7A1A]">
+            <span
+              className="line-mask block text-[clamp(3rem,12vw,8rem)]"
+              style={{ color: "var(--hero-name-accent)" }}
+            >
               PRADIPTA
             </span>
-            <span className="line-mask block text-[clamp(3rem,12vw,8rem)] text-[#eaf1ff]">
+            <span
+              className="line-mask block text-[clamp(3rem,12vw,8rem)]"
+              style={{ color: "var(--hero-name-light)" }}
+            >
               JANA
             </span>
           </h1>
@@ -669,16 +851,27 @@ export function HeroSection() {
           <p
             data-hero
             className="mt-6 font-mono text-sm uppercase tracking-[0.28em]"
-            style={{ color: "#c5d6f5" }}
+            style={{ color: "var(--hero-dim)" }}
           >
-            <span className="opacity-50">role:: </span>
-            <span ref={roleRef} className="text-[#4f9cff]" />
-            <span className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] animate-pulse bg-[#4f9cff] align-middle" />
+            {/* Was `opacity-50` on top of an already-dim ink, which put the
+                label under 2:1 in both themes. It is a label, not decoration:
+                dim it with its own token, once. */}
+            <span style={{ color: "var(--hero-label)" }}>role:: </span>
+            <span ref={roleRef} className="hero-role" />
+            <span
+              aria-hidden
+              className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] animate-pulse align-middle"
+              style={{ background: "var(--hero-caret)" }}
+            />
           </p>
 
           <p
             data-hero
-            className="mt-6 max-w-xl text-base leading-relaxed text-[#dbe6fb]/85 md:text-lg"
+            className="mt-6 max-w-xl text-base leading-relaxed md:text-lg"
+            style={{
+              color: "var(--hero-body)",
+              textShadow: "var(--hero-ink-shadow)",
+            }}
           >
             {profile.tagline}
           </p>
@@ -688,23 +881,30 @@ export function HeroSection() {
               so the whole opening reads as one continuous power-on. */}
           <div
             data-hero
-            className="mt-12 flex flex-col items-center gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#c5d6f5]/75"
+            className="mt-12 flex flex-col items-center gap-3 font-mono text-[10px] uppercase tracking-[0.3em]"
+            style={{ color: "var(--hero-dim)" }}
           >
             <span className="flex items-center gap-3">
-              <span aria-hidden className="inline-block h-8 w-[1px] animate-pulse bg-white/40" />
+              <span
+                aria-hidden
+                className="inline-block h-8 w-[1px] animate-pulse"
+                style={{ background: "var(--hero-caret)" }}
+              />
               scroll to boot
             </span>
             <span className="flex items-center gap-2.5 tabular-nums">
-              <span className="text-[#4f9cff]">sys.boot</span>
+              <span style={{ color: "var(--hero-meter)" }}>sys.boot</span>
               <span
                 ref={meterRef}
                 aria-hidden
-                className="tracking-[0.08em] text-[#4f9cff]"
+                className="tracking-[0.08em]"
+                style={{ color: "var(--hero-meter)" }}
               >
                 {"░".repeat(METER_CELLS)}
               </span>
               <span ref={meterPctRef}>{"  0%"}</span>
             </span>
+          </div>
           </div>
         </div>
       </div>

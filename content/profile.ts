@@ -9,10 +9,16 @@
 export interface SocialLinks {
   github: string;
   /**
-   * How the GitHub account is DISPLAYED. The account is `PradiptaJanaNew`
+   * How the GitHub account is DISPLAYED. The account is `Pradipta-Jana-SDE`
    * (the plain handle was taken), which reads awkwardly on a CV, so the UI
    * shows a clean label while every link still points at the real profile.
    * Never build a URL out of this.
+   *
+   * The account was renamed FROM `PradiptaJanaNew`. GitHub redirects
+   * repository URLs after a rename but NOT profile URLs — the old
+   * github.com/PradiptaJanaNew 404s, and the freed handle can be claimed by
+   * anyone — so a stale link here is worse than a dead one. If the account
+   * is ever renamed again, this URL has to move with it.
    */
   githubLabel: string;
   linkedin: string;
@@ -56,7 +62,7 @@ export const profile: Profile = {
   ],
   roles: ["Frontend", "Full-Stack", "React Native", "Cloud / DevOps", "WordPress"],
   socials: {
-    github: "https://github.com/PradiptaJanaNew",
+    github: "https://github.com/Pradipta-Jana-SDE",
     githubLabel: "pradiptajana",
     linkedin: "https://www.linkedin.com/in/pradiptakumarjana",
     x: "https://x.com/",
